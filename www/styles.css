@@ -1,0 +1,29 @@
+.container-fluid{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.navbar-default {
+  height: 120px;
+}
+
+.conteneur_logo{
+  border-bottom-width: 1px;
+  border-color: rgba(101, 147, 220, 0.5);
+  border-left-width: 1px;
+  border-right-width: 1px;
+  border-style: solid;
+  border-top-width: 1px;
+  box-shadow: rgba(101, 147, 220, 0.2) 0px 4px 8px 0px;
+  opacity: 1;
+  border-radius: 8px;
+  margin-left: 2rem;
+  width: 100%;
+  background-color: white;
+}
+
+.intro{
+  width: 100%;
+  padding: inherit !important;
+  margin-top: -20px;
+}
