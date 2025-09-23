@@ -19,6 +19,9 @@ themes <- unique(questions_list$Theme)
 
 ui <- fluidPage(
   includeCSS("www/styles.css"),
+  tags$head(
+    tags$script(src = "script.js")
+  ),
   navbarPage(
     id = "tabs",
     fluid = TRUE,
@@ -39,6 +42,6 @@ ui <- fluidPage(
     windowTitle = "Questionnaire d'aide à la décision",
     collapsible = TRUE,
     header = tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
-    mainPanel(width = 12, uiOutput("main_ui"))
+    mainPanel(width = 12, class="mise_en_page", uiOutput("main_ui"))
   )
 )
