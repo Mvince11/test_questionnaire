@@ -36,6 +36,7 @@
   padding-right: 4%;
   width: auto;
   opacity: 1;
+  float: inherit;
 }
 
 h4 {
@@ -46,6 +47,41 @@ h4 {
 
 
 
-.conditional {
+.question-block {
+  margin: 20px 0;
+  padding: 15px;
+  margin-left: 4%;
+  margin-right: 4%;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+
+
+
+.custom-radio input[type="radio"] {
   display: none;
+}
+
+.custom-radio label {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 4px 8px 4px 0;
+  border: 2px solid rgba(239,119,87,1);
+  border-radius: 20px;
+  background-color: #fff;
+  color: #293574;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-radio input[type="radio"]:checked + label {
+  background-color: rgba(239,119,87,1);
+  color: white;
+}
+
+textarea{
+  resize:none;
+  border: 2px solid rgba(239,119,87,1);
+  border-radius: 8px;
 }
