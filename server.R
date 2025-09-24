@@ -17,7 +17,9 @@ server <- function(input, output, session) {
     
     fluidRow(
       column(12,
-             h3(paste(page), style = "color:#293574;"),
+             div(style="color: red; font-size:1.2rem; margin-top: 15px; margin-bottom: 40px; margin-left: -58px;","*Champs obligatoires",
+                 class="champs_obligatoires"),
+             h3(paste(page), style = "color:#293574;margin-left:5%;font-weight: bold;"),
              lapply(seq_len(nrow(theme_questions)), function(i) {
                q <- theme_questions[i, ]
                numero     <- as.character(q$Numero)
@@ -63,9 +65,9 @@ server <- function(input, output, session) {
                           lapply(seq_along(reponses), function(j) {
                             id <- paste0("q", numero, "_", j)
                             val <- trimws(gsub("&nbsp;", "", reponses[j]))
-                            tags$div(style = "display:inline-block; margin:4px 15px 4px 0; color:#293574; font-weight:bold; opacity:0.9;",
-                                     tags$input(type = "checkbox", id = id, name = paste0("q", numero), value = val),
-                                     tags$label(`for` = id, val)
+                            tags$div(class = "custom-checkbox",style = "margin:4px 0; color:#293574; font-weight:bold; opacity:0.9;",
+                                     tags$input(type = "checkbox", id = id, name = paste0("q", numero), value = val,style="border-color:rgba(239,119,87,1);"),
+                                     tags$label(`for` = id, val, style="font-size:1.6rem; font-weight:bold; margin-left:8px;")
                             )
                           })
                         ),
@@ -82,15 +84,27 @@ server <- function(input, output, session) {
                  )
                )
              }),
-             if (page == themes[length(themes)]) {
-               actionButton("next_submit", "Soumettre")
-             } else {
-               actionButton(paste0("next_", page), "Page suivante")
-             }
+               if (page == themes[length(themes)]) {
+                 actionButton("next_submit", "Soumettre")
+              } else {
+                actionButton(paste0("next_", page), "Page suivante")
+              }
       )
-    )
+      )
   })
   
+  output$footer <- renderUI({
+    div( id="footer-dots-container",
+         div(class="left-space"),
+         includeHTML("www/custom_footer.html"),
+         div( class="right-btn",
+         tags$button(id="next-btn", 
+                     onclick = "window.location.href='dynamique_transition_territoriale.html';",
+                     "Suivant >"
+                    ),
+            )
+    )
+  })
   
   
   # 📤 Traitement des réponses
