@@ -1,6 +1,8 @@
 library(shiny)
 library(readxl)
 library(dplyr)
+library(stringr)
+library(shinyjs)
 
 
 questions_list <- read_excel("data/questions_combinees.xlsx") %>%
@@ -18,7 +20,7 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
 themes <- unique(questions_list$Theme)
 
 ui <- fluidPage(tags$script(type = "text/javascript", src="script.js"),
-  #tags$head(tags$script(src="script.js")),
+                useShinyjs(),
   includeCSS("www/styles.css"),
   
   navbarPage(
@@ -41,6 +43,6 @@ ui <- fluidPage(tags$script(type = "text/javascript", src="script.js"),
     windowTitle = "Questionnaire d'aide à la décision",
     collapsible = TRUE,
     header = tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
-    mainPanel(width = 12, class="mise_en_page", uiOutput("main_ui"))
-  ),uiOutput("footer")
+    mainPanel(width = 12,id = "main_content", uiOutput("main_ui"))
+  ), tags$br(), tags$br(),tags$br(),tags$br(),uiOutput("footer_conditional")#,uiOutput("footer")
 )

@@ -3,6 +3,18 @@
   padding-right: 0 !important;
 }
 
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.container-fluid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .navbar-default {
   height: 120px;
 }
@@ -45,6 +57,10 @@ h4 {
   color: #293574;
 }
 
+.col-sm-12{
+  padding-left: inherit !important;
+  padding-right: inherit !important;
+}
 
 
 .question-block {
@@ -52,8 +68,8 @@ h4 {
   padding: 15px;
   margin-left: 4%;
   margin-right: 4%;
-  background-color: #f9f9f9;
-  border-radius: 6px;
+  /*background-color: #f9f9f9;
+  border-radius: 6px;*/
 }
 
 
@@ -137,44 +153,93 @@ textarea{
   background-color: #EF7757;
 }
 
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  /*margin-left: 8px;*/
+  opacity: 1 !important;
+  border-radius: 50%;
+  border: 2px solid #EF7757;
+  width: 20px;
+  color: #EF7757;
+  text-align: center;
+}
 
-#footer-dots-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 280px;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity 0.3s;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* on garde l’alignement en haut */
+  gap: 40px;
+  margin: 0 5%;
+}
+
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* espace entre les blocs */
+}
+
+.info-block {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* espace entre les 3 zones */
-  padding: 10px 20px;
-  border-top: 2px solid #EF7757;
-  z-index: 1000;
-  height: 100px;
 }
 
-.left-space {
-  flex: 1;
+.info-block img {
+  width: 120px;
+  margin-right: 15px;
 }
 
-#footer-dots {
-  flex: 1;
-  display: flex;
-  justify-content: center; /* centre horizontalement */
-  gap: 6px;
+.info-text {
+  margin-left: 20px;
+  max-width: 600px;
 }
 
-.right-btn {
+.right-column {
   flex: 1;
   display: flex;
-  justify-content: flex-end; /* colle le bouton à droite */
+  /*justify-content: center;*/
+  /* 🔑 décalage pour viser le 2ᵉ bloc */
+  align-self: center; /* aligne verticalement au milieu de la colonne gauche */
+  margin-top: 90px;   /* ajuste la valeur selon la hauteur de ton premier bloc */
 }
 
-#next-btn {
-  background-color: #ef7757;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 1.5rem;
+.right-column img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
+
+.info-text h3 {
+      margin: 0;
+      font-weight: bold;
+      font-size: x-large;
+    }
+
+    .info-text h4 {
+      margin-top: 8px;
+      font-weight: normal;
+      font-size: 1.9rem;
+      opacity: 0.9;
+      color: #40424d;
+    }
