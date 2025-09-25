@@ -44,19 +44,19 @@ server <- function(input, output, session) {
             style = "color:white; margin-left:10%; font-size: 1.8em; font-weight: bold; margin-top: -9px;",
             "des forces et des besoins de votre territoire."
           ),
-          tags$button(
-            class = "btn",
+          actionButton(
+            "next_intro", "Commencer",
+            class = "btn btn-bounce",
             style = "
-        margin-left: 10%;
-        box-shadow: inset 1px 1px 3px #712929, inset -1px -1px 3px #ccc7c7;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 1.5em;
-        margin-top: 40px;
-        background-color: rgba(239,119,87,1);
-      ",
-            onclick = "window.location.href='introduction.html';",
-            "Commencer"
+          margin-left: 10%;
+          box-shadow: inset 1px 1px 3px #712929, inset -1px -1px 3px #ccc7c7;
+          border-radius: 8px;
+          font-weight: bold;
+          font-size: 1.5em;
+          margin-top: 40px;
+          background-color: rgba(239,119,87,1);
+          border: none;
+        "
           )
         ),
         
@@ -106,20 +106,20 @@ server <- function(input, output, session) {
           )
         ),tags$footer(
           style = "
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 10px 5%;
-    background: #f9f9f9;
-    border-top: 1px solid #ddd;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1.1rem;
-    color: #666;
-    z-index: 1000;
-  ",
+                  position: fixed;
+                  bottom: 0;
+                  left: 0;
+                  width: 100%;
+                  padding: 10px 5%;
+                  background: #f9f9f9;
+                  border-top: 1px solid #ddd;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  font-size: 1.1rem;
+                  color: #666;
+                  z-index: 1000;
+                ",
           div("Site créé avec ®RStudio"),
           div("© Cerema"),
           div(
@@ -133,9 +133,6 @@ server <- function(input, output, session) {
         )
         
       )
-      
-      
-  
     } else {
       
         
@@ -171,7 +168,8 @@ server <- function(input, output, session) {
                
                # Nettoyage de la condition
                cond_clean <- if (!is.na(condition)) {
-                 trimws(gsub("&nbsp;", "", condition))
+                 # Nettoyer et transformer "Commune ou Syndicat mixte" → "Commune|Syndicat mixte"
+                 str_replace_all(trimws(gsub("&nbsp;", "", condition)), "\\s+ou\\s+", "|")
                } else {
                  ""
                }

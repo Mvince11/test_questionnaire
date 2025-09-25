@@ -3,7 +3,7 @@ library(readxl)
 library(dplyr)
 library(stringr)
 library(shinyjs)
-
+library(gtools)
 
 questions_list <- read_excel("data/questions_combinees.xlsx") %>%
   rename_with(~ gsub("é", "e", .x)) %>%
@@ -13,11 +13,19 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Numero    = as.character(Numero),
     Questions = as.character(Questions),
     Style     = as.character(Style),
-    reponses  = as.character(Reponses)
+    reponses  = as.character(Reponses),
+    
+    # Séparer la partie numérique et la partie suffixe
+    Numero_num = as.numeric(str_extract(Numero, "^\\d+")),
+    Numero_suffix = str_extract(Numero, "[a-zA-Z]+$")
   ) %>%
-  filter(!is.na(Questions), !is.na(Theme))
+  filter(!is.na(Questions), !is.na(Theme)) %>%
+  arrange(Numero_num, Numero_suffix)
 
-themes <- unique(questions_list$Theme)
+themes <- questions_list %>%
+  pull(Theme) %>%
+  unique()
+
 
 ui <- fluidPage(tags$script(type = "text/javascript", src="script.js"),
                 useShinyjs(),

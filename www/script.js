@@ -1,63 +1,55 @@
-document.addEventListener("DOMContentLoaded", function() {
-  // Fonction pour mettre à jour l'affichage des conditionnels
-  function updateConditionalBlocks() {
-    document.querySelectorAll(".conditional").forEach(function(block) {
-      const parentId = block.getAttribute("data-parent-question");
-      const condition = block.getAttribute("data-condition");
-      const parent = document.getElementById(parentId);
+function updateConditionalBlocks() {
+  document.querySelectorAll(".conditional").forEach(function(block) {
+    const parentId = block.getAttribute("data-parent-question");
+    const conditionRaw = block.getAttribute("data-condition");
+    const parent = document.getElementById(parentId);
 
-      if (!parent) return;
+    if (!parent || !conditionRaw) {
+      console.warn("Parent not found or condition missing for block:", block);
+      return;
+    }
 
-      let show = false;
+    const conditions = conditionRaw.split(/[,|]/).map(c =>
+      c.replace(/\u00A0/g, " ").trim().toLowerCase()
+    );
 
-      // Vérifier si le parent est un ensemble de radios
-      const radios = parent.querySelectorAll("input[type=radio]");
-      if (radios.length > 0) {
-        radios.forEach(r => {
-          if (r.checked && r.value.trim() === condition) {
-            show = true;
-          }
-        });
+    let show = false;
+
+    parent.querySelectorAll("input[type=radio], input[type=checkbox]").forEach(input => {
+      const val = input.value.replace(/\u00A0/g, " ").trim().toLowerCase();
+      if (input.checked && conditions.includes(val)) {
+        show = true;
       }
-
-      // Vérifier si le parent est un ensemble de checkboxes
-      const checkboxes = parent.querySelectorAll("input[type=checkbox]");
-      if (checkboxes.length > 0) {
-        checkboxes.forEach(c => {
-          if (c.checked && c.value.trim() === condition) {
-            show = true;
-          }
-        });
-      }
-
-      // Vérifier si le parent est un <select>
-      const select = parent.querySelector("select");
-      if (select) {
-        if (select.value.trim() === condition) {
-          show = true;
-        }
-      }
-
-      // Vérifier si le parent est un <textarea> (rare)
-      const textarea = parent.querySelector("textarea");
-      if (textarea) {
-        if (textarea.value.trim() === condition) {
-          show = true;
-        }
-      }
-
-      // Appliquer l’affichage
-      block.style.display = show ? "block" : "none";
     });
-  }
 
-  // Attacher les écouteurs à tous les inputs
+    const select = parent.querySelector("select");
+    if (select) {
+      const val = select.value.replace(/\u00A0/g, " ").trim().toLowerCase();
+      if (conditions.includes(val)) {
+        show = true;
+      }
+    }
+
+    const textarea = parent.querySelector("textarea");
+    if (textarea) {
+      const val = textarea.value.replace(/\u00A0/g, " ").trim().toLowerCase();
+      if (conditions.includes(val)) {
+        show = true;
+      }
+    }
+
+    block.style.display = show ? "block" : "none";
+    console.log(`Block ${block.id} display: ${show}`);
+  });
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  updateConditionalBlocks();
   document.addEventListener("change", updateConditionalBlocks);
   document.addEventListener("keyup", updateConditionalBlocks);
-
-  // Initialiser au chargement
-  updateConditionalBlocks();
 });
+
 
 document.addEventListener("DOMContentLoaded", function () {
   const normalize = s => String(s || "")
