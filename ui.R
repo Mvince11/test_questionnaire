@@ -13,14 +13,14 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Numero    = as.character(Numero),
     Questions = as.character(Questions),
     Style     = as.character(Style),
-    reponses  = as.character(Reponses),
-    
-    # Séparer la partie numérique et la partie suffixe
+    Reponses  = as.character(Reponses),
+    reponses  = strsplit(Reponses, ";") |> lapply(trimws),
     Numero_num = as.numeric(str_extract(Numero, "^\\d+")),
     Numero_suffix = str_extract(Numero, "[a-zA-Z]+$")
   ) %>%
   filter(!is.na(Questions), !is.na(Theme)) %>%
   arrange(Numero_num, Numero_suffix)
+
 
 themes <- questions_list %>%
   pull(Theme) %>%

@@ -1,53 +1,32 @@
-function updateConditionalBlocks() {
-  document.querySelectorAll(".conditional").forEach(function(block) {
-    const parentId = block.getAttribute("data-parent-question");
-    const conditionRaw = block.getAttribute("data-condition");
-    const parent = document.getElementById(parentId);
+document.addEventListener("DOMContentLoaded", function () {
+  function normalize(s) {
+    return String(s || "").replace(/\u00A0/g, " ").trim().toLowerCase();
+  }
 
-    if (!parent || !conditionRaw) {
-      console.warn("Parent not found or condition missing for block:", block);
-      return;
-    }
+  function updateBlock(block) {
+    const expectedValues = block.dataset.condition.split(",").map(normalize);
+    const parentName = block.dataset.parentQuestion;
+    const selected = [];
 
-    const conditions = conditionRaw.split(/[,|]/).map(c =>
-      c.replace(/\u00A0/g, " ").trim().toLowerCase()
-    );
-
-    let show = false;
-
-    parent.querySelectorAll("input[type=radio], input[type=checkbox]").forEach(input => {
-      const val = input.value.replace(/\u00A0/g, " ").trim().toLowerCase();
-      if (input.checked && conditions.includes(val)) {
-        show = true;
+    document.querySelectorAll(`[name='${parentName}']`).forEach(el => {
+      if (el.tagName === "SELECT" && el.value) {
+        selected.push(normalize(el.value));
       }
     });
 
-    const select = parent.querySelector("select");
-    if (select) {
-      const val = select.value.replace(/\u00A0/g, " ").trim().toLowerCase();
-      if (conditions.includes(val)) {
-        show = true;
-      }
-    }
-
-    const textarea = parent.querySelector("textarea");
-    if (textarea) {
-      const val = textarea.value.replace(/\u00A0/g, " ").trim().toLowerCase();
-      if (conditions.includes(val)) {
-        show = true;
-      }
-    }
-
+    const show = expectedValues.some(val => selected.includes(val));
     block.style.display = show ? "block" : "none";
-    console.log(`Block ${block.id} display: ${show}`);
+  }
+
+  function updateAllBlocks() {
+    document.querySelectorAll(".conditional").forEach(updateBlock);
+  }
+
+  document.querySelectorAll("select[name]").forEach(ctrl => {
+    ctrl.addEventListener("change", updateAllBlocks);
   });
-}
 
-
-document.addEventListener("DOMContentLoaded", function() {
-  updateConditionalBlocks();
-  document.addEventListener("change", updateConditionalBlocks);
-  document.addEventListener("keyup", updateConditionalBlocks);
+  updateAllBlocks();
 });
 
 
