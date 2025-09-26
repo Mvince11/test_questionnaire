@@ -17,11 +17,11 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Reponses  = as.character(Reponses),
     Parent    = as.character(Parent),
     Condition = as.character(Condition),
-    TexteTheme = as.character(TexteTheme)
+    TexteTheme = as.character(TexteTheme),
+    Affichage = as.character(Affichage)
   ) %>%
-  # on enlève toutes les lignes où Question ou Theme est manquant
   filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>% 
-  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme) %>%
+  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage) %>%
   summarise(reponses = list(Reponses), .groups = "drop") %>%
   mutate(
     reponses = lapply(reponses, function(x) {
@@ -30,10 +30,11 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Numero_num    = as.numeric(str_extract(Numero, "^\\d+")),
     Numero_suffix = str_extract(Numero, "[a-zA-Z]+$")
   ) %>%
-  # on enlève aussi les NA dans Numero_num si certaines lignes n’ont pas de chiffre
   filter(!is.na(Numero_num)) %>%
-  arrange(Numero_num, Numero_suffix)
-
+  mutate(
+    Numero_order = paste0(sprintf("%03d", Numero_num), Numero_suffix)
+  ) %>%
+  arrange(Numero_order)
 
 
 themes <- questions_list %>%

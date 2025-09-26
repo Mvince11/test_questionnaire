@@ -143,8 +143,30 @@ server <- function(input, output, session) {
         tmp <- tmp[!is.na(tmp)]
         if (length(tmp) > 0) {
           texte_theme <- as.character(tmp[1])
-          texte_theme <- gsub("\n", "<br>", texte_theme)  # ✅ ici on écrase avec le texte formaté
         }
+      }
+      
+      # Traitement du texte avec || comme séparateur
+      texte_blocs <- if (!is.null(texte_theme) && is.character(texte_theme) && !is.na(texte_theme)) {
+        unlist(strsplit(texte_theme, "\\|\\|")) |> trimws()
+      } else {
+        character(0)
+      }
+      
+      
+      # Le premier bloc est affiché comme paragraphe, les suivants comme liste
+      texte_intro <- if (length(texte_blocs) > 0) {
+        tags$p(HTML(gsub("\n", "<br>", texte_blocs[1])),
+               style = "font-size:1.9rem;")
+      }
+      
+      texte_liste <- if (length(texte_blocs) > 1) {
+        tags$ul(
+          lapply(texte_blocs[-1], function(item) {
+            tags$li(item)
+          }),
+          style = "margin-left:20px; font-size:1.9rem;"
+        )
       }
       
     
@@ -167,9 +189,10 @@ server <- function(input, output, session) {
               ),
               if (!is.null(texte_theme) && !is.na(texte_theme) && nzchar(texte_theme)) {
                 tags$div(
-                  HTML(
-                  texte_theme
-                ),style = "margin-left:5%; font-size:1.7rem; color:#293574; margin-bottom:44px; margin-top:40px;font-weight: bold;
+                  
+                  texte_intro,
+                  texte_liste
+                ,style = "margin-left:5%; font-size:1.7rem; color:#293574; margin-bottom:44px; margin-top:40px;font-weight: bold;
                           font-family: Source Sans Pro;"
                 )
               }
@@ -239,24 +262,31 @@ server <- function(input, output, session) {
                            
                            tags$div(
                              class = "custom-checkbox",
-                             style = if (is_conditional) {
-                               "display:flex; align-items:center; margin:6px 0; color:#293574; font-weight:bold; opacity:0.9;"
-                             } else {
-                               "display:inline-block; margin:6px 12px 6px 0; color:#293574; font-weight:bold; opacity:0.9;"
-                             },
+                             style = "display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; color: #293574; font-weight: bold; opacity: 0.95;",
                              tags$input(
-                               type = "checkbox", id = id, name = paste0("q", numero), value = val,
-                               style = "border-color:rgba(239,119,87,1);margin-right:8px; transform: scale(1.2); cursor:pointer;"
+                               type = "checkbox",
+                               id = id,
+                               name = paste0("q", numero),
+                               value = val,
+                               style = "transform: scale(1.3); margin-top: 4px; cursor: pointer; border-color: rgba(239,119,87,1);"
                              ),
-                             tags$label(`for` = id, val,
-                                        style = "font-size:1.6rem; font-weight:bold; margin-left:8px;")
+                             tags$label(
+                               `for` = id,
+                               val,
+                               style = "font-size: 1.6rem; font-weight: bold; margin-left: 8px; line-height: 1.4; max-width: 90%; word-break: break-word;"
+                             )
                            )
                          })
                        ),
                        
                        "textarea" = tags$textarea(
                          name = paste0("q", numero), rows = 4, cols = 50, required = NA,
-                         style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;"
+                         style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;border:2px solid rgba(239,119,87,1);"
+                       ),
+                       "textarea-alt" = tags$textarea(
+                         name = paste0("q", numero), rows = 4, cols = 50, required = NA,
+                         style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;border:2px solid rgba(239,119,87,1);
+                                  height:35px;"
                        ),
                        "select" = tags$select(
                          name = paste0("q", numero), required = NA,
