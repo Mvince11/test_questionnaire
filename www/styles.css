@@ -255,3 +255,10 @@ textarea{
 .btn-bounce:hover {
   animation: bounce 0.6s ease;
 }
+
+.shiny-bound-input {
+  background: none;
+  border-color: inherit;
+  border-top-color: inherit;
+}
+

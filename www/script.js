@@ -1,36 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-  function normalize(s) {
-    return String(s || "").replace(/\u00A0/g, " ").trim().toLowerCase();
-  }
-
-  function updateBlock(block) {
-    const expectedValues = block.dataset.condition.split(",").map(normalize);
-    const parentName = block.dataset.parentQuestion;
-    const selected = [];
-
-    document.querySelectorAll(`[name='${parentName}']`).forEach(el => {
-      if (el.tagName === "SELECT" && el.value) {
-        selected.push(normalize(el.value));
-      }
-    });
-
-    const show = expectedValues.some(val => selected.includes(val));
-    block.style.display = show ? "block" : "none";
-  }
-
-  function updateAllBlocks() {
-    document.querySelectorAll(".conditional").forEach(updateBlock);
-  }
-
-  document.querySelectorAll("select[name]").forEach(ctrl => {
-    ctrl.addEventListener("change", updateAllBlocks);
-  });
-
-  updateAllBlocks();
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
   const normalize = s => String(s || "")
     .replace(/\u00A0/g, " ") // supprime &nbsp;
     .replace(/\s+/g, " ")
@@ -79,26 +47,37 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateConditionals() {
-    document.querySelectorAll(".conditional").forEach(block => {
-      const parents = (block.getAttribute("data-parent-question") || "")
-        .split(/[;,]+/) // accepte séparateurs ";" ou ","
-        .map(s => s.trim())
-        .filter(Boolean);
-      const condition = normalize(block.getAttribute("data-condition") || "");
+  document.querySelectorAll(".conditional").forEach(block => {
+    const parents = (block.getAttribute("data-parent-question") || "")
+      .split(/[;,]+/) // accepte séparateurs ";" ou ","
+      .map(s => s.trim())
+      .filter(Boolean);
 
-      // la question s'affiche si AU MOINS UN parent correspond
-      let show = false;
-      parents.forEach(pid => {
-        const answer = getAnswer(pid);
-        if (matches(answer, condition)) {
+    const conditions = (block.getAttribute("data-condition") || "")
+      .split(/[;,]+/) // accepte séparateurs "," ou ";"
+      .map(s => normalize(s))
+      .filter(Boolean);
+
+    let show = false;
+
+    parents.forEach(pid => {
+      const answer = getAnswer(pid);
+      if (Array.isArray(answer)) {
+        if (answer.some(a => conditions.includes(a))) {
           show = true;
         }
-      });
-
-      block.style.display = show ? "block" : "none";
-      block.classList.toggle("visible", show);
+      } else {
+        if (conditions.includes(answer)) {
+          show = true;
+        }
+      }
     });
-  }
+
+    block.style.display = show ? "block" : "none";
+    block.classList.toggle("visible", show);
+  });
+}
+
 
   // initialisation
   updateConditionals();

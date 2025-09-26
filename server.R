@@ -13,6 +13,7 @@ server <- function(input, output, session) {
   # 🧱 Affichage dynamique
   output$main_ui <- renderUI({
     page <- as.character(current_page())
+    theme_questions <- filter(questions_list, Theme == page)
     
     if (page == "intro") {
       # --- Page d'accueil / introduction ---
@@ -136,103 +137,139 @@ server <- function(input, output, session) {
     } else {
       
         
-    theme_questions <<- filter(questions_list, Theme == page)
-    texte_theme <<- theme_questions$TextTheme[which.max(!is.na(theme_questions$TextTheme))]
+      texte_theme <- NA_character_
+      if ("TexteTheme" %in% names(theme_questions)) {
+        tmp <- theme_questions$TexteTheme
+        tmp <- tmp[!is.na(tmp)]
+        if (length(tmp) > 0) {
+          texte_theme <- as.character(tmp[1])
+          texte_theme <- gsub("\n", "<br>", texte_theme)  # ✅ ici on écrase avec le texte formaté
+        }
+      }
+      
     
     div(class = "mise_en_page",
         fluidRow(
-          column(12,
-                 div(style="color: red; font-size:1.2rem; margin-top: 15px; margin-bottom: 40px; margin-left: -58px;",
-                     "*Champs obligatoires",
-                     class="champs_obligatoires"
-                 ),
-                 tagList(
-                   h3(paste(page), style = "color:#293574;margin-left:5%;font-weight: bold;"),
-                   if (!is.na(texte_theme) && nzchar(texte_theme)) {
-                     tags$p(
-                       texte_theme,
-                       style = "margin-left:5%; font-size:1.8rem; color:#293574; margin-bottom:44px;margin-top:40px;font-weight: bold;"
-                     )
-                   }
-                 ),
-                 
-                 lapply(seq_len(nrow(theme_questions)), function(i) {
-                   q <- theme_questions[i, ]
-                   numero     <- as.character(q$Numero)
-                   question   <- q$Questions
-                   style      <- ifelse(is.na(q$Style), "radio", q$Style)
-                   condition  <- if ("Condition" %in% names(q)) q$Condition else NA
-                   parent_col <- if ("Parent" %in% names(q)) q$Parent else NA
-                   reponses   <- unlist(strsplit(q$Reponses, ";"))
-                   
-                   is_conditional <- !is.na(parent_col) && nzchar(parent_col)
-                   
-                   # --- commentaire éventuel entre [ ] ---
-                   commentaire <- stringr::str_extract(question, "\\[.*?\\]")
-                   question_sans_commentaire <- stringr::str_replace(question, "\\[.*?\\]", "")
-                   if (!is.na(commentaire)) {
-                     commentaire <- stringr::str_replace_all(commentaire, "\\[|\\]", "")
-                     tooltip_html <- sprintf(
-                       "<span class='tooltip'><span class='icon'>i</span><span class='tooltiptext'>%s</span></span>",
-                       commentaire
-                     )
-                   } else {
-                     tooltip_html <- ""
-                   }
-                   
-                   div(
-                     id = paste0("q", numero),
-                     class = if (is_conditional) c("question-block", "conditional") else "question-block",
-                     `data-parent-question` = if (is_conditional) paste0("q", parent_col) else NULL,
-                     `data-condition` = if (is_conditional) condition else NULL,  # <-- brut
-                     style = if (is_conditional) {
-                       "display:none; margin:20px 0; padding:15px; margin-left:4%; margin-right:4%;"
-                     } else {
-                       "margin:20px 0; padding:15px; margin-left:4%; margin-right:4%;"
-                     },
-                     
-                     tags$p(HTML(sprintf(
-                       "<strong style='font-size:1.6rem; color:#293574;'>%s</strong> %s <span style='color:red;'>*</span>",
-                       question_sans_commentaire, tooltip_html
-                     ))),
-                     
-                     switch(style,
-                            "radio" = tagList(
-                              lapply(seq_along(reponses), function(j) {
-                                id <- paste0("q", numero, "_", j)
-                                val <- trimws(gsub("&nbsp;", "", reponses[j]))
-                                tags$div(class = "custom-radio", style = "display:contents;",
-                                         tags$input(type = "radio", id = id, name = paste0("q", numero),
-                                                    value = val, required = if (j == 1) NA else NULL),
-                                         tags$label(`for` = id, val)
-                                )
-                              })
-                            ),
-                            "checkbox" = tagList(
-                              lapply(seq_along(reponses), function(j) {
-                                id <- paste0("q", numero, "_", j)
-                                val <- trimws(gsub("&nbsp;", "", reponses[j]))
-                                tags$div(class = "custom-checkbox",
-                                         style = "display:flex; align-items:center; margin:6px 0; color:#293574; font-weight:bold; opacity:0.9;",
-                                         tags$input(type = "checkbox", id = id, name = paste0("q", numero), value = val,
-                                                    style="border-color:rgba(239,119,87,1);margin-right:8px; transform: scale(1.2); cursor:pointer;"),
-                                         tags$label(`for` = id, val, style="font-size:1.6rem; font-weight:bold; margin-left:8px;")
-                                )
-                              })
-                            ),
-                            "textarea" = tags$textarea(name = paste0("q", numero), rows = 4, cols = 50, required = NA,
-                                                       style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;"
-                            ),
-                            "select" = tags$select(name = paste0("q", numero), required = NA,
-                                                   style = "width:100%; margin-top:6px; border-color:rgba(239,119,87,1); border-radius:6px; height:35px; color:#293574; font-weight:bold; opacity:0.9;",
-                                                   lapply(reponses, function(r) {
-                                                     val <- trimws(gsub("&nbsp;", "", r))
-                                                     tags$option(value = val, val)
-                                                   })
-                            )
-                     )
-                   )
-                 })
+          column(
+            12,
+            # --- Mention obligatoire ---
+            div(
+              style="color: red; font-size:1.2rem; margin-top: 15px; margin-bottom: 40px; margin-left: -58px;",
+              "*Champs obligatoires",
+              class="champs_obligatoires"
+            ),
+            
+            # --- Thème et texte associé ---
+            tagList(
+              h3(
+                paste(page),
+                style = "color:#293574;margin-left:5%;font-weight: bold;"
+              ),
+              if (!is.null(texte_theme) && !is.na(texte_theme) && nzchar(texte_theme)) {
+                tags$div(
+                  HTML(
+                  texte_theme
+                ),style = "margin-left:5%; font-size:1.7rem; color:#293574; margin-bottom:44px; margin-top:40px;font-weight: bold;
+                          font-family: Source Sans Pro;"
+                )
+              }
+            ),
+            
+            # --- Génération dynamique des questions ---
+            lapply(seq_len(nrow(theme_questions)), function(i) {
+              q <- theme_questions[i, ]
+              numero     <- as.character(q$Numero)
+              question   <- q$Questions
+              style      <- ifelse(is.na(q$Style), "radio", q$Style)
+              condition  <- if ("Condition" %in% names(q)) q$Condition else NA
+              parent_col <- if ("Parent" %in% names(q)) q$Parent else NA
+              reponses <- q$reponses[[1]]
+              
+              # Question conditionnelle ?
+              is_conditional <- !is.na(parent_col) && nzchar(parent_col)
+              
+              # --- Commentaire éventuel [ ... ] ---
+              commentaire <- stringr::str_extract(question, "\\[.*?\\]")
+              question_sans_commentaire <- stringr::str_replace(question, "\\[.*?\\]", "")
+              if (!is.na(commentaire)) {
+                commentaire <- stringr::str_replace_all(commentaire, "\\[|\\]", "")
+                tooltip_html <- sprintf(
+                  "<span class='tooltip'><span class='icon'>i</span><span class='tooltiptext'>%s</span></span>",
+                  commentaire
+                )
+              } else {
+                tooltip_html <- ""
+              }
+              
+              div(
+                id = paste0("q", numero),
+                class = if (is_conditional) c("question-block", "conditional") else "question-block",
+                `data-parent-question` = if (is_conditional) paste0("q", parent_col) else NULL,
+                `data-condition` = if (is_conditional) condition else NULL,
+                style = if (is_conditional) {
+                  "display:none; margin:20px 0; padding:15px; margin-left:4%; margin-right:4%;"
+                } else {
+                  "margin:20px 0; padding:15px; margin-left:4%; margin-right:4%;"
+                },
+                
+                tags$p(HTML(sprintf(
+                  "<strong style='font-size:1.6rem; color:#293574;'>%s</strong> %s <span style='color:red;'>*</span>",
+                  question_sans_commentaire, tooltip_html
+                ))),
+                
+                switch(style,
+                       "radio" = tagList(
+                         lapply(seq_along(reponses), function(j) {
+                           id <- paste0("q", numero, "_", j)
+                           val <- trimws(gsub("&nbsp;", "", reponses[j]))
+                           tags$div(
+                             class = "custom-radio", style = "display:contents;",
+                             tags$input(
+                               type = "radio", id = id, name = paste0("q", numero),
+                               value = val, required = if (j == 1) NA else NULL
+                             ),
+                             tags$label(`for` = id, val)
+                           )
+                         })
+                       ),
+                       "checkbox" = tagList(
+                         lapply(seq_along(reponses), function(j) {
+                           id <- paste0("q", numero, "_", j)
+                           val <- trimws(gsub("&nbsp;", "", reponses[j]))
+                           
+                           tags$div(
+                             class = "custom-checkbox",
+                             style = if (is_conditional) {
+                               "display:flex; align-items:center; margin:6px 0; color:#293574; font-weight:bold; opacity:0.9;"
+                             } else {
+                               "display:inline-block; margin:6px 12px 6px 0; color:#293574; font-weight:bold; opacity:0.9;"
+                             },
+                             tags$input(
+                               type = "checkbox", id = id, name = paste0("q", numero), value = val,
+                               style = "border-color:rgba(239,119,87,1);margin-right:8px; transform: scale(1.2); cursor:pointer;"
+                             ),
+                             tags$label(`for` = id, val,
+                                        style = "font-size:1.6rem; font-weight:bold; margin-left:8px;")
+                           )
+                         })
+                       ),
+                       
+                       "textarea" = tags$textarea(
+                         name = paste0("q", numero), rows = 4, cols = 50, required = NA,
+                         style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;"
+                       ),
+                       "select" = tags$select(
+                         name = paste0("q", numero), required = NA,
+                         style = "width:100%; margin-top:6px; border:2px solid rgba(239,119,87,1); border-radius:6px; height:35px; color:#293574; font-weight:bold; opacity:0.9;
+                         font-size: 1.9rem;font-family: Apple Chancery;padding-left:10px;",
+                         lapply(reponses, function(r) {
+                           val <- trimws(gsub("&nbsp;", "", r))
+                           tags$option(value = val, val)
+                         })
+                       )
+                )
+              )
+            })
           )
         )
     )
@@ -333,6 +370,16 @@ server <- function(input, output, session) {
     )
   })
   
+  observe({
+    lapply(themes, function(th) {
+      observeEvent(input[[paste0("next_", th)]], {
+        current_index <- which(themes == th)
+        if (current_index < length(themes)) {
+          current_page(themes[current_index + 1])
+        }
+      })
+    })
+  })
   
   
   

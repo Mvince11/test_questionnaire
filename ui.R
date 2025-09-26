@@ -5,21 +5,35 @@ library(stringr)
 library(shinyjs)
 library(gtools)
 
+
 questions_list <- read_excel("data/questions_combinees.xlsx") %>%
-  rename_with(~ gsub("é", "e", .x)) %>%
-  rename_with(trimws) %>%
+  rename_with(~ gsub("é", "e", .x)) %>%      
+  rename_with(trimws) %>%                   
   mutate(
     Theme     = as.character(Theme),
     Numero    = as.character(Numero),
     Questions = as.character(Questions),
     Style     = as.character(Style),
     Reponses  = as.character(Reponses),
-    reponses  = strsplit(Reponses, ";") |> lapply(trimws),
-    Numero_num = as.numeric(str_extract(Numero, "^\\d+")),
+    Parent    = as.character(Parent),
+    Condition = as.character(Condition),
+    TexteTheme = as.character(TexteTheme)
+  ) %>%
+  # on enlève toutes les lignes où Question ou Theme est manquant
+  filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>% 
+  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme) %>%
+  summarise(reponses = list(Reponses), .groups = "drop") %>%
+  mutate(
+    reponses = lapply(reponses, function(x) {
+      strsplit(as.character(x), ";")[[1]] |> trimws()
+    }),
+    Numero_num    = as.numeric(str_extract(Numero, "^\\d+")),
     Numero_suffix = str_extract(Numero, "[a-zA-Z]+$")
   ) %>%
-  filter(!is.na(Questions), !is.na(Theme)) %>%
+  # on enlève aussi les NA dans Numero_num si certaines lignes n’ont pas de chiffre
+  filter(!is.na(Numero_num)) %>%
   arrange(Numero_num, Numero_suffix)
+
 
 
 themes <- questions_list %>%
