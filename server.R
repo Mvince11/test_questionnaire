@@ -260,9 +260,19 @@ server <- function(input, output, session) {
                            id <- paste0("q", numero, "_", j)
                            val <- trimws(gsub("&nbsp;", "", reponses[j]))
                            
+                           # Récupérer StyleDetail si présent
+                           style_detail <- ifelse("Affichage" %in% names(q), q$Affichage, NA)
+                           
                            tags$div(
                              class = "custom-checkbox",
-                             style = "display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; color: #293574; font-weight: bold; opacity: 0.95;",
+                             style = if (!is.na(style_detail) && style_detail == "inline-block") {
+                               # Cas particulier → inline-block
+                               "display: inline-block; margin-right:15px; margin-top:10px; color: #293574; font-weight: bold; opacity: 0.95;"
+                             } else {
+                               # Cas général → flex
+                               "display: flex; align-items: flex-start; gap: 12px; margin: 10px 0; color: #293574; font-weight: bold; opacity: 0.95;"
+                             },
+                             
                              tags$input(
                                type = "checkbox",
                                id = id,
@@ -278,7 +288,6 @@ server <- function(input, output, session) {
                            )
                          })
                        ),
-                       
                        "textarea" = tags$textarea(
                          name = paste0("q", numero), rows = 4, cols = 50, required = NA,
                          style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;border:2px solid rgba(239,119,87,1);"
