@@ -4,29 +4,33 @@ library(dplyr)
 library(stringr)
 library(shinyjs)
 library(gtools)
+library(rsconnect)
 
 
 questions_list <- read_excel("data/questions_combinees.xlsx") %>%
   rename_with(~ gsub("é", "e", .x)) %>%      
   rename_with(trimws) %>%                   
   mutate(
-    Theme     = as.character(Theme),
-    Numero    = as.character(Numero),
-    Questions = as.character(Questions),
-    Style     = as.character(Style),
-    Reponses  = as.character(Reponses),
-    Parent    = as.character(Parent),
-    Condition = as.character(Condition),
+    Theme      = as.character(Theme),
+    Numero     = as.character(Numero),
+    Questions  = as.character(Questions),
+    Style      = as.character(Style),
+    Reponses   = as.character(Reponses),
+    Parent     = as.character(Parent),
+    Condition  = as.character(Condition),
     TexteTheme = as.character(TexteTheme),
-    Affichage = as.character(Affichage)
+    Affichage  = as.character(Affichage)
   ) %>%
-  filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>% 
+  filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>%
+  
+  # on regroupe mais on garde les réponses "plates"
   group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage) %>%
-  summarise(reponses = list(Reponses), .groups = "drop") %>%
+  summarise(Reponses = paste(Reponses, collapse = ";"), .groups = "drop") %>%
+  
+  # on transforme en vecteurs propres
   mutate(
-    reponses = lapply(reponses, function(x) {
-      strsplit(as.character(x), ";")[[1]] |> trimws()
-    }),
+    reponses = strsplit(Reponses, ";"),
+    reponses = lapply(reponses, trimws),   # nettoyer espaces
     Numero_num    = as.numeric(str_extract(Numero, "^\\d+")),
     Numero_suffix = str_extract(Numero, "[a-zA-Z]+$")
   ) %>%
@@ -36,10 +40,10 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
   ) %>%
   arrange(Numero_order)
 
-
 themes <- questions_list %>%
   pull(Theme) %>%
   unique()
+
 
 
 ui <- fluidPage(tags$script(type = "text/javascript", src="script.js"),
