@@ -1,7 +1,5 @@
 server <- function(input, output, session) {
   current_page <- reactiveVal("intro")
-  completed_themes <- reactiveVal(character())  # stocke les noms des thèmes complétés
-  
   
   
   # 🔄 Navigation
@@ -11,33 +9,6 @@ server <- function(input, output, session) {
   }
   observeEvent(input$next_submit, current_page("submit"))
   observeEvent(input$back_submit, current_page(themes[length(themes)]))
-  
-  generateProgressBar <- function(all_themes, current_theme, completed_themes) {
-    tags$div(
-      id = "progress-bar",
-      class = "progress-bar",
-      lapply(seq_along(all_themes), function(i) {
-        theme <- all_themes[i]
-        label <- theme  # ou un vecteur parallèle si tu veux des noms plus lisibles
-        
-        state_class <- if (theme == current_theme) {
-          "active"
-        } else if (theme %in% completed_themes) {
-          "completed"
-        } else {
-          "pending"
-        }
-        
-        tags$div(
-          class = paste("progress-item", state_class),
-          `data-step` = theme,
-          style = "display: flex; align-items: center; gap: 5px; margin-right: 15px;",
-          tags$div(class = "circle", i),  # numéro du thème
-          tags$span(class = "label", HTML(label))  # nom du thème
-        )
-      })
-    )
-  }
   
   # 🧱 Affichage dynamique
   output$main_ui <- renderUI({
@@ -51,12 +22,12 @@ server <- function(input, output, session) {
         div(
           class = "page-layout-custom",
           style = "
-                background-color: #ef7757 !important;
-                padding-top: 5%;
-                margin-top: -2%;
-                padding-bottom: 3%;
-                font-family: 'Source Sans Pro', sans-serif;
-              ",
+      background-color: #ef7757 !important;
+      padding-top: 5%;
+      margin-top: -2%;
+      padding-bottom: 3%;
+      font-family: 'Source Sans Pro', sans-serif;
+    ",
           div(
             style = "color:white; margin-left:10%; font-size: 2.4em; margin-top: 1%; font-weight: bold;",
             "Diagnostic Flash"
@@ -78,16 +49,16 @@ server <- function(input, output, session) {
             "next_intro", "Commencer",
             class = "btn btn-bounce",
             style = "
-                  margin-left: 10%;
-                  box-shadow: inset 1px 1px 3px #712929, inset -1px -1px 3px #ccc7c7;
-                  border-radius: 8px;
-                  font-weight: bold;
-                  font-size: 1.5em;
-                  margin-top: 40px;
-                  background-color: rgba(239,119,87,1);
-                  border: none;
-                "
-                    )
+          margin-left: 10%;
+          box-shadow: inset 1px 1px 3px #712929, inset -1px -1px 3px #ccc7c7;
+          border-radius: 8px;
+          font-weight: bold;
+          font-size: 1.5em;
+          margin-top: 40px;
+          background-color: rgba(239,119,87,1);
+          border: none;
+        "
+          )
         ),
         
         # --- Container avec colonnes ---
@@ -197,19 +168,33 @@ server <- function(input, output, session) {
           style = "margin-left:20px; font-size:1.9rem;"
         )
       }
+      
+      
+      generateProgressBar <- function(theme_questions) {
+        themes <- unique(theme_questions$Theme)
+        labels <- unique(theme_questions$Theme) # ou ThemeName si tu préfères
+        
+        tags$div(
+          id = "progress-bar",
+          class = "progress-bar",
+          lapply(seq_along(themes), function(i) {
+            tags$div(
+              class = "progress-item",
+              `data-step` = themes[i],
+              tags$div(class = "circle", themes[i]),
+              tags$span(class = "label", HTML(labels[i]))
+            )
+          })
+        )
+      }
       tagList(
         tags$div(
           fluidRow(
             column(12,
           id = "progress-bar",
           class = "progress-bar",
-          style = "margin-left: 10.2%; margin-right: 3.3%; padding: 0 2%; padding-bottom:14px;", # ou 0 si tu veux pleine largeur
-          generateProgressBar(
-            all_themes = themes,  # liste complète
-            current_theme = current_page(),
-            completed_themes = completed_themes()
-          )
-          
+          style = "margin-left: 0; margin-right: 0; padding: 0 2%;", # ou 0 si tu veux pleine largeur
+          generateProgressBar(theme_questions)
                   )
                   )
           ),
@@ -349,15 +334,14 @@ server <- function(input, output, session) {
                          lapply(reponses, function(r) {
                            val <- trimws(gsub("&nbsp;", "", r))
                            tags$option(value = val, val)
-                                                      }
-                                )
-                                            )
-                          )
-                      )
-                  })
+                         })
+                       )
                 )
               )
+            })
+          )
         )
+    )
       )
             }
     })
@@ -367,16 +351,16 @@ server <- function(input, output, session) {
       tagList(
         tags$br(), tags$br(), tags$br(), tags$br(),
         uiOutput("footer")
-              )
+      )
     } else {
       NULL  # rien affiché sur la page intro
-            }
+    }
   })
   
   
   output$footer <- renderUI({
     p <- current_page()
-    tagList(
+    
     div(
       id = "footer",
       style = "position:fixed; bottom:0; left:0; width:100%;
@@ -452,11 +436,6 @@ server <- function(input, output, session) {
           )
         )
       )
-    ),tags$script(
-      HTML(
-        sprintf("window.currentProgressStep = %d;", which(themes == current_page()))
-          )
-                )
     )
   })
   
@@ -464,20 +443,13 @@ server <- function(input, output, session) {
     lapply(themes, function(th) {
       observeEvent(input[[paste0("next_", th)]], {
         current_index <- which(themes == th)
-        
-        # 🔵 Marquer le thème comme complété
-        old <- completed_themes()
-        if (!(th %in% old)) {
-          completed_themes(c(old, th))
-        }
-        
-        # 🔶 Passer au thème suivant si possible
         if (current_index < length(themes)) {
           current_page(themes[current_index + 1])
         }
       })
     })
   })
+  
   
   
   # 📤 Traitement des réponses

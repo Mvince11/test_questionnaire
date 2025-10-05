@@ -19,12 +19,13 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Parent     = as.character(Parent),
     Condition  = as.character(Condition),
     TexteTheme = as.character(TexteTheme),
-    Affichage  = as.character(Affichage)
+    Affichage  = as.character(Affichage),
+    Remplace  = as.character(Remplace)
   ) %>%
   filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>%
   
   # on regroupe mais on garde les réponses "plates"
-  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage) %>%
+  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage, Remplace) %>%
   summarise(Reponses = paste(Reponses, collapse = ";"), .groups = "drop") %>%
   
   # on transforme en vecteurs propres
@@ -46,7 +47,11 @@ themes <- questions_list %>%
 
 
 
-ui <- fluidPage(tags$script(type = "text/javascript", src="script.js"),
+ui <- fluidPage(tags$script(
+  type = "text/javascript",
+  src = paste0("script.js?v=", as.integer(Sys.time())),
+  defer = NA
+),
                 useShinyjs(),
   includeCSS("www/styles.css"),
   

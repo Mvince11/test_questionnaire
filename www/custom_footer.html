@@ -13,6 +13,52 @@
     <span class="dot" data-step="10"></span>
     <span class="dot" data-step="11"></span>
     <span class="dot" data-step="12"></span>
+    <span class="dot" data-step="13"></span>
   </div>
 
-  
+  <script>
+  setTimeout(function () {
+    const dots = document.querySelectorAll("#footer-dots .dot");
+    const step = window.currentProgressStep;
+
+    if (!step || isNaN(step)) return;
+
+    dots.forEach(dot => {
+      dot.classList.remove("active");
+      if (parseInt(dot.dataset.step, 10) === step) {
+        dot.classList.add("active");
+      }
+    });
+  }, 100);
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const conditionalBlocks = document.querySelectorAll(".conditional");
+
+    conditionalBlocks.forEach(block => {
+      const parentId = block.dataset.parentQuestion;
+      const condition = block.dataset.condition;
+
+      const parentInputs = document.querySelectorAll(`#${parentId} input[type="radio"], #${parentId} input[type="checkbox"]`);
+
+      const updateVisibility = () => {
+        let show = false;
+        parentInputs.forEach(input => {
+          if (input.checked && input.value === condition) {
+            show = true;
+          }
+        });
+        block.style.display = show ? "block" : "none";
+      };
+
+      parentInputs.forEach(input => {
+        input.addEventListener("change", updateVisibility);
+      });
+
+      // Initial check
+      updateVisibility();
+    });
+  });
+</script>
+

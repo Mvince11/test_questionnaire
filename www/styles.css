@@ -262,3 +262,79 @@ textarea{
   border-top-color: inherit;
 }
 
+
+
+/* Masquage par classe pour le bloc conditionnel (q5a) - plus souple */
+.conditional {
+    display: none;
+}
+
+.progress-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin: 30px 0;
+  padding: 0 2%;
+}
+
+.progress-item {
+  margin-bottom: 3px;
+}
+
+.progress-item .circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  line-height: 32px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.progress-item .label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #999;
+}
+
+/* État actif */
+.progress-item.active .circle {
+  background-color: #ef7757;
+}
+.progress-item.active .label {
+  color: #ef7757;
+}
+
+/* État complété */
+.progress-item.completed .circle {
+  background-color: #293574;
+}
+.progress-item.completed .label {
+  color: #293574;
+}
+
+/* État en attente */
+.progress-item.pending .circle {
+  background-color: #ccc;
+}
+.progress-item.pending .label {
+  color: #ccc;
+}
+
+#progress-bar {
+  width: auto;
+  margin: 0;
+  padding: 0 2%;
+  box-sizing: border-box;
+  display: flex;
+  box-shadow: none;
+  background-color: inherit;
+}
+
+
+.dots {
+  display: block;
+  margin: 0 auto; /* centre horizontalement */
+}
+
