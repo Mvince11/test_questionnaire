@@ -3,15 +3,6 @@ server <- function(input, output, session) {
   completed_themes <- reactiveVal(character())  # stocke les noms des thèmes complétés
   
   
-  
-  # 🔄 Navigation
-  observeEvent(input$next_intro, current_page(themes[1]))
-  for (i in seq_along(themes[-length(themes)])) {
-    observeEvent(input[[paste0("next_", themes[i])]], current_page(themes[i + 1]))
-  }
-  observeEvent(input$next_submit, current_page("submit"))
-  observeEvent(input$back_submit, current_page(themes[length(themes)]))
-  
   generateProgressBar <- function(all_themes, current_theme, completed_themes) {
     tags$div(
       id = "progress-bar",
@@ -75,7 +66,7 @@ server <- function(input, output, session) {
             "des forces et des besoins de votre territoire."
           ),
           actionButton(
-            "next_intro", "Commencer",
+            "next_btn", "Commencer",
             class = "btn btn-bounce",
             style = "
                   margin-left: 10%;
@@ -376,6 +367,8 @@ server <- function(input, output, session) {
   
   output$footer <- renderUI({
     p <- current_page()
+    pos <- match(p, themes)
+    
     tagList(
     div(
       id = "footer",
@@ -387,6 +380,18 @@ server <- function(input, output, session) {
       div(
         id = "footer-dots-container",
         style = "display:flex; align-items:center; justify-content:space-between;",
+        
+        # bouton précédent à gauche (si applicable)
+        if (!is.null(pos) && pos > 1) {
+          div(
+            class = "left-btn",
+            actionButton(
+              "prev_btn", "< Précédent",
+              style = "background-color:#ef7757;color:white;border:none;
+                     padding:10px 20px;border-radius:6px;font-size:1.6rem;"
+            )
+          )
+        },
         
         # dots au centre
         div(
@@ -479,6 +484,26 @@ server <- function(input, output, session) {
     })
   })
   
+  observeEvent(input$prev_btn, {
+    pos <- match(current_page(), themes)
+    if (!is.null(pos) && pos > 1) {
+      prev_theme <- themes[pos - 1]
+      current_page(prev_theme)
+      
+      # 🔄 Optionnel : retirer le thème actuel de completed
+      current_theme <- themes[pos]
+      completed_themes(setdiff(completed_themes(), current_theme))
+    }
+  })
+  
+  
+  # 🔄 Navigation
+  observeEvent(input$next_btn, current_page(themes[1]))
+  for (i in seq_along(themes[-length(themes)])) {
+    observeEvent(input[[paste0("next_", themes[i])]], current_page(themes[i + 1]))
+  }
+  observeEvent(input$next_submit, current_page("submit"))
+  observeEvent(input$back_submit, current_page(themes[length(themes)]))
   
   # 📤 Traitement des réponses
   observeEvent(input$submit_btn, {
