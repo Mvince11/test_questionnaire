@@ -5,7 +5,8 @@ library(stringr)
 library(shinyjs)
 library(gtools)
 library(rsconnect)
-
+library(purrr)
+library(writexl)
 
 questions_list <- read_excel("data/questions_combinees.xlsx") %>%
   rename_with(~ gsub("é", "e", .x)) %>%      

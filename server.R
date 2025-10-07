@@ -404,7 +404,7 @@ server <- function(input, output, session) {
           class = "right-btn",
           if (!is.null(p) && p == themes[length(themes)]) {
             actionButton(
-              "next_submit", "Soumettre",
+              "submit", "Soumettre",
               style = "background-color:#ef7757;color:white;border:none;
                      padding:10px 20px;border-radius:6px;font-size:1rem;"
             )
@@ -505,12 +505,36 @@ server <- function(input, output, session) {
   observeEvent(input$next_submit, current_page("submit"))
   observeEvent(input$back_submit, current_page(themes[length(themes)]))
   
-  # 📤 Traitement des réponses
-  observeEvent(input$submit_btn, {
-    responses <- lapply(questions_list$Numero, function(numero) {
-      input[[paste0("q", numero)]]
+  # # 📤 Traitement des réponses
+  # observeEvent(input$submit, {
+  #   responses <- lapply(questions_list$Numero, function(numero) {
+  #     input[[paste0("q", numero)]]
+  #   })
+  #   print(responses)
+  #   showModal(modalDialog("Réponses enregistrées. Merci !"))
+  # })
+  
+  
+  observeEvent(input$submit, {
+    # Liste des identifiants de questions
+    ids <- as.character(theme_questions$Numero)
+    
+    # Récupération des réponses
+    reponses <- lapply(ids, function(id) {
+      input[[paste0("q", id)]]
     })
-    print(responses)
+    
+    # Création d’un data.frame
+    df <- data.frame(
+      Numero = ids,
+      Question = theme_questions$Questions,
+      Réponse = I(reponses),
+      stringsAsFactors = FALSE
+    )
+    
+    # Sauvegarde dans un fichier Excel
+    writexl::write_xlsx(df, path = "reponses_utilisateur.xlsx")
     showModal(modalDialog("Réponses enregistrées. Merci !"))
   })
+  
 }
