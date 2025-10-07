@@ -47,10 +47,12 @@ themes <- questions_list %>%
 
 
 
-ui <- fluidPage(tags$script(
+ui <- fluidPage(
+  tags$head(
+  tags$script(
   type = "text/javascript",
   src = paste0("script.js?v=", as.integer(Sys.time())),
-  defer = NA
+  defer = NA)
 ),
                 useShinyjs(),
   includeCSS("www/styles.css"),
