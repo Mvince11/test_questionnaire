@@ -1,5 +1,3 @@
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("✅ Script conditionnels chargé");
 
   // 🔧 Normalisation des chaînes
   const normalize = s => String(s || "")
@@ -103,18 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
         block.classList.toggle("visible", show);
       }
     });
-
-    // ✅ Logique spécifique q5 / q5.1
-    const q2Answers = getAnswer("q2");
-    const hasSyndicat = Array.isArray(q2Answers)
-      ? q2Answers.includes("un syndicat mixte")
-      : q2Answers === "un syndicat mixte";
-
-    const q5 = document.getElementById("q5");
-    const q51 = document.getElementById("q5.1");
-
-    if (q5) q5.style.display = hasSyndicat ? "none" : "block";
-    if (q51) q51.style.display = hasSyndicat ? "block" : "none";
   }
 
   // 🎨 Initialisation visuelle
@@ -128,56 +114,85 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 📦 Injection des blocs .include
-  const includes = document.querySelectorAll(".include");
-  let loadedCount = 0;
-
-  includes.forEach(el => {
-    const url = el.dataset.include;
-    fetch(url)
-      .then(res => res.text())
-      .then(html => {
-        el.innerHTML = html;
-        loadedCount++;
-        if (loadedCount === includes.length) {
-          console.log("✅ Tous les blocs .include injectés");
-          updateConditionals();
-        }
-      });
-  });
-
-  // 💾 Synchronisation initiale des réponses
-  document.querySelectorAll("input, select, textarea").forEach(el => {
-    if (!el.name) return;
-    let value;
-    if (el.type === "checkbox") {
-      const all = document.querySelectorAll(`input[type="checkbox"][name="${el.name}"]`);
-      value = Array.from(all).filter(c => c.checked).map(c => c.value);
-    } else if (el.type === "radio") {
-      const checked = document.querySelector(`input[type="radio"][name="${el.name}"]:checked`);
-      value = checked ? checked.value : "";
-    } else {
-      value = el.value;
-    }
-    localStorage.setItem(el.name, JSON.stringify(value));
-  });
-
   // 🔄 Mise à jour à chaque changement
-  document.addEventListener("change", function (e) {
-    if (!e.target.name) return;
-    let value;
-    if (e.target.type === "checkbox") {
-      const all = document.querySelectorAll(`input[type="checkbox"][name="${e.target.name}"]`);
-      value = Array.from(all).filter(c => c.checked).map(c => c.value);
-    } else {
-      value = e.target.value;
+  function bindChangeListeners() {
+    document.addEventListener("change", function (e) {
+      if (!e.target.name) return;
+      let value;
+      if (e.target.type === "checkbox") {
+        const all = document.querySelectorAll(`input[type="checkbox"][name="${e.target.name}"]`);
+        value = Array.from(all).filter(c => c.checked).map(c => c.value);
+      } else {
+        value = e.target.value;
+      }
+      localStorage.setItem(e.target.name, JSON.stringify(value));
+      updateConditionals();
+    });
+  }
+
+  // 📦 Injection des blocs .include
+  function injectIncludes(callback) {
+    const includes = document.querySelectorAll(".include");
+    let loadedCount = 0;
+
+    if (includes.length === 0) {
+      callback();
+      return;
     }
-    localStorage.setItem(e.target.name, JSON.stringify(value));
-    updateConditionals();
+
+    includes.forEach(el => {
+      const url = el.dataset.include;
+      fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          el.innerHTML = html;
+          loadedCount++;
+          if (loadedCount === includes.length) {
+            console.log("✅ Tous les blocs .include injectés");
+            callback();
+          }
+        });
+    });
+  }
+
+  // 🔗 Lier les parents aux écouteurs
+  function bindParentListeners() {
+    const parents = new Set();
+
+    document.querySelectorAll(".conditional").forEach(block => {
+      const parentList = (block.dataset.parentQuestion || "")
+        .split(/[;,|]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      parentList.forEach(pid => parents.add(pid));
+    });
+
+    parents.forEach(pid => {
+      const container = document.getElementById(pid);
+      if (!container) return;
+
+      container.querySelectorAll("input, select, textarea").forEach(el => {
+        el.addEventListener("change", updateConditionals);
+      });
+    });
+  }
+
+  // ✅ DOM prêt
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("📦 DOMContentLoaded : DOM prêt");
+
+    initializeVisualState();
+    injectIncludes(() => {
+      updateConditionals();
+      bindParentListeners();
+      bindChangeListeners();
+      setTimeout(updateConditionals, 300);
+    });
   });
 
-  // 🚀 Initialisation
-  initializeVisualState();
-  updateConditionals();
-  setTimeout(updateConditionals, 300);
-});
+  // ✅ Tout chargé (images, CSS, etc.)
+  window.onload = function () {
+    console.log("🎯 window.onload : ressources chargées");
+    updateConditionals(); // sécurité visuelle
+  };

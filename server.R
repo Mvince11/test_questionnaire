@@ -505,16 +505,6 @@ server <- function(input, output, session) {
   observeEvent(input$next_submit, current_page("submit"))
   observeEvent(input$back_submit, current_page(themes[length(themes)]))
   
-  # # 📤 Traitement des réponses
-  # observeEvent(input$submit, {
-  #   responses <- lapply(questions_list$Numero, function(numero) {
-  #     input[[paste0("q", numero)]]
-  #   })
-  #   print(responses)
-  #   showModal(modalDialog("Réponses enregistrées. Merci !"))
-  # })
-  
-  
   observeEvent(input$submit, {
     # Liste des identifiants de questions
     ids <- as.character(theme_questions$Numero)
@@ -528,7 +518,7 @@ server <- function(input, output, session) {
     df <- data.frame(
       Numero = ids,
       Question = theme_questions$Questions,
-      Réponse = I(reponses),
+      Reponse = I(reponses),
       stringsAsFactors = FALSE
     )
     
