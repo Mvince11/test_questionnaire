@@ -49,15 +49,14 @@ themes <- questions_list %>%
 
 
 ui <- fluidPage(
-#   tags$head(
-#   tags$script(
-#   type = "text/javascript",
-#   src = paste0("script.js?v=", as.integer(Sys.time())),
-#   defer = NA)
-# ),
-                useShinyjs(),
-  includeCSS("www/styles.css"),
-  
+   tags$head( useShinyjs(),
+              includeCSS("www/styles.css"),
+              tags$script(src = "normalize.js"),
+              tags$script(src = "getAnswer.js"),
+              tags$script(src = "updateConditionals.js"),
+              tags$script(src = "initConditionals.js")
+   ),
+
   navbarPage(
     id = "tabs",
     fluid = TRUE,
@@ -78,11 +77,6 @@ ui <- fluidPage(
     windowTitle = "Questionnaire d'aide à la décision",
     collapsible = TRUE,
     header = tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
-    mainPanel(width = 12,id = "main_content", uiOutput("main_ui"),
-              tags$script(src = "normalize.js"),
-              tags$script(src = "getAnswer.js"),
-              tags$script(src = "updateConditionals.js"),
-              tags$script(src = "initConditionals.js"))
+    mainPanel(width = 12,id = "main_content", uiOutput("main_ui"))
   ), tags$br(), tags$br(),tags$br(),tags$br(),uiOutput("footer_conditional")
-    #,uiOutput("footer")
 )

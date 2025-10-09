@@ -205,7 +205,7 @@ server <- function(input, output, session) {
                   )
           ),
     div(class = "mise_en_page",
-        fluidRow(
+        fluidRow(id="mise_en_page",
           column(12,
             # --- Mention obligatoire ---
             div(

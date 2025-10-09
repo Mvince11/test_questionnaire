@@ -1,7 +1,7 @@
-console.log = function () {};
+<!DOCTYPE HTML>
 
-
-function updateConditionals() {
+<script>
+  function updateConditionals() {
   document.querySelectorAll(".conditional").forEach(block => {
     const parents = (block.dataset.parentQuestion || "")
       .split(/[;,|]+/)
@@ -38,40 +38,47 @@ function updateConditionals() {
       }
     });
 
-    // Bloc de remplacement
     if (replaceId) {
       const replaced = document.getElementById(replaceId);
+      if (replaced && !block.classList.contains("injected")) {
+      replaced.before(block);
+      block.classList.add("injected");
+    }
 
-      // Injecter le bloc si nécessaire
-      if (replaced && !document.getElementById(block.id)) {
-        replaced.before(block);
-      }
 
       if (replaced) {
-        replaced.style.setProperty("display", show ? "none" : "block", "important");
-        block.style.setProperty("display", show ? "block" : "none", "important");
-
-        replaced.classList.toggle("visible", !show);
-        block.classList.toggle("visible", show);
-      }
-    } else {
+      replaced.style.setProperty("display", show ? "none" : "block", "important");
       block.style.setProperty("display", show ? "block" : "none", "important");
+    
+      replaced.classList.toggle("visible", !show);
       block.classList.toggle("visible", show);
     }
 
-    // Logs de débogage
-    console.log("🔍 Évaluation du bloc:", block.id || block.dataset.replace, {
-      parents,
-      conditions,
-      answer: parents.map(getAnswer),
-      show
-    });
 
-    console.log("🧪 Comparaison brute :", {
-      condition: conditions,
-      answer: parents.map(getAnswer)
-    });
+      block.style.display = show ? "block" : "none";
+      block.classList.toggle("visible", show);
+    } else {
+      block.style.display = show ? "block" : "none";
+      block.classList.toggle("visible", show);
+    }
+    
+    console.log("🔍 Évaluation du bloc:", block.id || block.dataset.replace, {
+  parents,
+  conditions,
+  answer: parents.map(getAnswer),
+  show
+});
+
+console.log("🧪 Comparaison brute :", {
+  condition: conditions,
+  answer: parents.map(getAnswer)
+});
+
   });
+  
 
   console.log("🔁 updateConditionals triggered");
+
 }
+
+</script>
