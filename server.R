@@ -534,6 +534,12 @@ server <- function(input, output, session) {
     raison_sociale <- reponses_df$Reponse[reponses_df$Questions == "Raison sociale de la collectivité (nom exact)"]
     adresse_mail <- reponses_df$Reponse[reponses_df$Questions == "Email"]
     
+    genre          <- if (length(genre) == 0) NA else genre
+    nom            <- if (length(nom) == 0) NA else nom
+    prenom         <- if (length(prenom) == 0) NA else prenom
+    raison_sociale <- if (length(raison_sociale) == 0) NA else raison_sociale
+    adresse_mail   <- if (length(adresse_mail) == 0) NA else adresse_mail
+    
     Identite <- data.frame(
       Civilité        = genre,
       Nom             = nom,
@@ -560,14 +566,14 @@ server <- function(input, output, session) {
       ),
       div(
         style = "font-size:1.2rem; color:#293574; margin-top:10px;",
-        HTML("✅ Merci <strong>Vincent</strong>, vos réponses ont bien été enregistrées.<br><br>
-         Nous allons passer à la fiche de synthèse.")
+        HTML(paste0( "Merci <strong>", genre, " ", nom, " ", prenom, "</strong>, vos réponses ont bien été enregistrées.<br><br>",
+                     "Nous allons passer à la fiche de synthèse." ))
       ),
       easyClose = TRUE,
-      footer = #tagList(
-        #modalButton("Fermer"),
+      footer = tagList(
+        modalButton("Fermer"),
         actionButton("continuer", "Continuer", class = "btn-success")
-      #)
+      )
     ))
     
     
