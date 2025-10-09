@@ -1,7 +1,7 @@
 server <- function(input, output, session) {
   current_page <- reactiveVal("intro")
   completed_themes <- reactiveVal(character())  # stocke les noms des thèmes complétés
-  
+  answers <- reactiveValues()
   
   generateProgressBar <- function(all_themes, current_theme, completed_themes) {
     tags$div(
@@ -406,7 +406,7 @@ server <- function(input, output, session) {
             actionButton(
               "submit", "Soumettre",
               style = "background-color:#ef7757;color:white;border:none;
-                     padding:10px 20px;border-radius:6px;font-size:1rem;"
+                     padding:10px 20px;border-radius:6px;font-size:1;6rem;"
             )
           } else {
             actionButton(
@@ -502,29 +502,75 @@ server <- function(input, output, session) {
   for (i in seq_along(themes[-length(themes)])) {
     observeEvent(input[[paste0("next_", themes[i])]], current_page(themes[i + 1]))
   }
-  observeEvent(input$next_submit, current_page("submit"))
-  observeEvent(input$back_submit, current_page(themes[length(themes)]))
+  # observeEvent(input$next_submit, current_page("submit"))
+  # observeEvent(input$back_submit, current_page(themes[length(themes)]))
   
-  observeEvent(input$submit, {
-    # Liste des identifiants de questions
-    ids <- as.character(theme_questions$Numero)
-    
-    # Récupération des réponses
-    reponses <- lapply(ids, function(id) {
-      input[[paste0("q", id)]]
+###### Permet d'enregister les réponses evec answer reactivevalue ##### 
+  observe({
+    lapply(questions_list$Numero, function(id) {
+      inputId <- paste0("q", id)
+      observeEvent(input[[inputId]], {
+        answers[[inputId]] <- input[[inputId]]
+      }, ignoreInit = TRUE)
     })
+  })
+  
+##### Enregistre toutes les Questions et réponses dans un fichier xlsx ######  
+  observeEvent(input$submit, {
+    reponses_df <- questions_list %>%
+      mutate(Reponse = sapply(Numero, function(id) {
+        val <- input[[paste0("q", id)]]
+        if (is.null(val)) return("")
+        if (is.atomic(val)) return(paste(val, collapse = ", "))
+        return(as.character(val))
+      })) %>%
+      select(Numero, Questions, Reponse)%>%
+      filter(!(Reponse %in% c("", "Sélectionner…", "Sélectionner...")))
     
-    # Création d’un data.frame
-    df <- data.frame(
-      Numero = ids,
-      Question = theme_questions$Questions,
-      Reponse = I(reponses),
+    
+    genre <- reponses_df$Reponse[reponses_df$Questions == "Civilité"]
+    nom <- reponses_df$Reponse[reponses_df$Questions == "Nom"]
+    prenom <- reponses_df$Reponse[reponses_df$Questions == "Prénom"]
+    raison_sociale <- reponses_df$Reponse[reponses_df$Questions == "Raison sociale de la collectivité (nom exact)"]
+    adresse_mail <- reponses_df$Reponse[reponses_df$Questions == "Email"]
+    
+    Identite <- data.frame(
+      Civilité        = genre,
+      Nom             = nom,
+      Prénom          = prenom,
+      `Raison sociale` = raison_sociale,
+      `Adresse mail`   = adresse_mail,
       stringsAsFactors = FALSE
     )
     
-    # Sauvegarde dans un fichier Excel
-    writexl::write_xlsx(df, path = "reponses_utilisateur.xlsx")
-    showModal(modalDialog("Réponses enregistrées. Merci !"))
+    horodatage <- format(Sys.time(), "%Y-%m-%d-%H-%M")
+    
+    writexl::write_xlsx(
+      list(
+        Identite = Identite,
+        Reponses = reponses_df
+      ),
+      path = paste0("Reponses/reponses_", nom, "_", prenom, "_", horodatage, ".xlsx")
+    )
+    
+    showModal(modalDialog(
+      title = div(
+        icon("check-circle"), 
+        span("Réponses enregistrées", style = "color:#2E7D32; font-weight:bold; font-size:1.4rem;")
+      ),
+      div(
+        style = "font-size:1.2rem; color:#293574; margin-top:10px;",
+        HTML("✅ Merci <strong>Vincent</strong>, vos réponses ont bien été enregistrées.<br><br>
+         Nous allons passer à la fiche de synthèse.")
+      ),
+      easyClose = TRUE,
+      footer = #tagList(
+        #modalButton("Fermer"),
+        actionButton("continuer", "Continuer", class = "btn-success")
+      #)
+    ))
+    
+    
   })
   
 }

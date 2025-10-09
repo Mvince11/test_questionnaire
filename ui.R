@@ -54,7 +54,8 @@ ui <- fluidPage(
               tags$script(src = "normalize.js"),
               tags$script(src = "getAnswer.js"),
               tags$script(src = "updateConditionals.js"),
-              tags$script(src = "initConditionals.js")
+              tags$script(src = "initConditionals.js"),
+              tags$script(src = "change_in_input.js")
    ),
 
   navbarPage(
