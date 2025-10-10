@@ -245,6 +245,8 @@ server <- function(input, output, session) {
               has_parent <- !is.na(parent_col) && parent_col != "" && parent_col != "NA"
               is_replaced <- numero %in% theme_questions$Remplace
               is_conditional <- has_parent
+              is_required <- tolower(q$Observation) == "Obligatoire"
+              is_required <- if (!is.na(is_required)) is_required else FALSE
               
               # --- Commentaire éventuel [ ... ] ---
               commentaire <- stringr::str_extract(question, "\\[.*?\\]")
@@ -284,7 +286,7 @@ server <- function(input, output, session) {
                            tags$div(
                              class = "custom-radio", style = "display:contents;",
                              tags$input(
-                               type = "radio", id = id, name = paste0("q", numero),
+                               type = "radio", id = id, name = paste0("q", numero),is_required = is_required,
                                value = val, required = if (j == 1) NA else NULL
                              ),
                              tags$label(`for` = id, val)
@@ -312,6 +314,7 @@ server <- function(input, output, session) {
                              tags$input(
                                type = "checkbox",
                                id = id,
+                               is_required = is_required,
                                name = paste0("q", numero),
                                value = val,
                                style = "transform: scale(1.3); margin-top: 4px; cursor: pointer; border-color: rgba(239,119,87,1);"
@@ -335,6 +338,7 @@ server <- function(input, output, session) {
                        ),
                        "select" = tags$select(
                          name = paste0("q", numero), required = NA,
+                         is_required = is_required,
                          style = "width:100%; margin-top:6px; border:2px solid rgba(239,119,87,1); border-radius:6px; height:35px; color:#293574; font-weight:bold; opacity:0.9;
                          font-size: 1.9rem;font-family: Apple Chancery;padding-left:10px;",
                          lapply(reponses, function(r) {
@@ -465,10 +469,45 @@ server <- function(input, output, session) {
     )
   })
   
+  validate_theme <- function(th) {
+    questions_theme <- questions_list %>% filter(Theme == Theme)
+    obligatoires <- questions_theme %>% filter(tolower(Observation) == "Obligatoire")
+    
+    non_remplies <- obligatoires %>%
+      mutate(Reponse = sapply(Numero, function(id) {
+        val <- input[[paste0("q", id)]]
+        if (is.null(val) || val == "" || val %in% c("Sélectionner…", "Sélectionner...")) return(NA)
+        return(val)
+      })) %>%
+      filter(is.na(Reponse))
+    
+    if (nrow(non_remplies) > 0) {
+      showModal(modalDialog(
+        title = div(icon("exclamation-triangle"), span("Champs obligatoires manquants", style = "color:#D32F2F; font-weight:bold; font-size:1.4rem;")),
+        div(
+          style = "font-size:1.2rem; color:#293574; margin-top:10px;",
+          HTML(paste0(
+            "⚠️ Vous devez remplir les champs suivants avant de continuer :<br><ul>",
+            paste0("<li><strong>", non_remplies$Questions, "</strong></li>", collapse = ""),
+            "</ul>"
+          ))
+        ),
+        easyClose = TRUE,
+        footer = modalButton("Corriger")
+      ))
+      return(FALSE)
+    }
+    
+    return(TRUE)
+  }
+  
   observe({
     lapply(themes, function(th) {
       observeEvent(input[[paste0("next_", th)]], {
         current_index <- which(themes == th)
+        
+        # ✅ Vérifier les champs obligatoires du thème courant
+        if (!validate_theme(th)) return()  # ⛔ Stop si validation échoue
         
         # 🔵 Marquer le thème comme complété
         old <- completed_themes()
@@ -483,6 +522,7 @@ server <- function(input, output, session) {
       })
     })
   })
+  
   
   observeEvent(input$prev_btn, {
     pos <- match(current_page(), themes)
@@ -541,9 +581,9 @@ server <- function(input, output, session) {
     adresse_mail   <- if (length(adresse_mail) == 0) NA else adresse_mail
     
     Identite <- data.frame(
-      Civilité        = genre,
+      "Civilité"        = genre,
       Nom             = nom,
-      Prénom          = prenom,
+      "Prénom"          = prenom,
       `Raison sociale` = raison_sociale,
       `Adresse mail`   = adresse_mail,
       stringsAsFactors = FALSE

@@ -21,12 +21,16 @@ questions_list <- read_excel("data/questions_combinees.xlsx") %>%
     Condition  = as.character(Condition),
     TexteTheme = as.character(TexteTheme),
     Affichage  = as.character(Affichage),
-    Remplace  = as.character(Remplace)
+    Remplace  = as.character(Remplace),
+    Choix = as.character(Choix),
+    Section = as.character(Section),
+    Note = as.character(Note),
+    Observation = as.character(Observation)
   ) %>%
   filter(!is.na(Questions), !is.na(Theme), !is.na(Numero)) %>%
   
   # on regroupe mais on garde les réponses "plates"
-  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage, Remplace) %>%
+  group_by(Theme, Numero, Parent, Questions, Style, Condition, TexteTheme, Affichage, Remplace, Choix, Section, Note, Observation) %>%
   summarise(Reponses = paste(Reponses, collapse = ";"), .groups = "drop") %>%
   
   # on transforme en vecteurs propres
