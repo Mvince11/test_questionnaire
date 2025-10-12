@@ -19,6 +19,10 @@ body {
   height: 120px;
 }
 
+.navbar-toggle{
+display: none;  
+}
+
 .conteneur_logo{
   border-bottom-width: 1px;
   border-color: rgba(101, 147, 220, 0.5);

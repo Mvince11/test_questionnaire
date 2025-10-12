@@ -30,11 +30,13 @@ server <- function(input, output, session) {
     )
   }
   
-  # 🧱 Affichage dynamique
+  ##### Page principale #####
   output$main_ui <- renderUI({
     page <- as.character(current_page())
-    theme_questions <- filter(questions_list, Theme == page)
+    theme_questions <<- filter(questions_list, Theme == page)
     
+    
+    ##### Page d'accueil #####
     if (page == "intro") {
       # --- Page d'accueil / introduction ---
       tagList(
@@ -188,6 +190,8 @@ server <- function(input, output, session) {
           style = "margin-left:20px; font-size:1.9rem;"
         )
       }
+      
+      ##### Pages questions #####
       tagList(
         tags$div(
           fluidRow(
@@ -209,7 +213,7 @@ server <- function(input, output, session) {
           column(12,
             # --- Mention obligatoire ---
             div(
-              style="color: red; font-size:1.2rem; margin-top: 15px; margin-bottom: 40px; margin-left: -58px;",
+              style="color: red; font-size:1.2rem; margin-top: 15px; margin-bottom: 40px; margin-left: -2vw;",
               "*Champs obligatoires",
               class="champs_obligatoires"
             ),
@@ -231,7 +235,7 @@ server <- function(input, output, session) {
               }
             ),
             
-            # --- Génération dynamique des questions ---
+            ###### Génération dynamique des questions #####
             lapply(seq_len(nrow(theme_questions)), function(i) {
               q <- theme_questions[i, ]
               numero     <- as.character(q$Numero)
@@ -245,7 +249,7 @@ server <- function(input, output, session) {
               has_parent <- !is.na(parent_col) && parent_col != "" && parent_col != "NA"
               is_replaced <- numero %in% theme_questions$Remplace
               is_conditional <- has_parent
-              is_required <- tolower(q$Observation) == "Obligatoire"
+              is_required <- tolower(q$Observation) == "obligatoire"
               is_required <- if (!is.na(is_required)) is_required else FALSE
               
               # --- Commentaire éventuel [ ... ] ---
@@ -328,11 +332,11 @@ server <- function(input, output, session) {
                          })
                        ),
                        "textarea" = tags$textarea(
-                         name = paste0("q", numero), rows = 4, cols = 50, required = NA,
+                         name = paste0("q", numero),id = paste0("q", numero), rows = 4, cols = 50, required = NA,is_required = is_required,
                          style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;border:2px solid rgba(239,119,87,1);"
                        ),
                        "textarea-alt" = tags$textarea(
-                         name = paste0("q", numero), rows = 4, cols = 50, required = NA,
+                         name = paste0("q", numero),id = paste0("q", numero), rows = 4, cols = 50, required = NA,is_required = is_required,
                          style = "width:100%; margin-top:6px; color:#293574; font-weight:bold; opacity:0.9;border:2px solid rgba(239,119,87,1);
                                   height:35px;"
                        ),
@@ -357,6 +361,7 @@ server <- function(input, output, session) {
             }
     })
   
+  ##### Footer commun #####
   output$footer_conditional <- renderUI({
     if (as.character(current_page()) != "intro") {
       tagList(
@@ -368,7 +373,7 @@ server <- function(input, output, session) {
             }
   })
   
-  
+  ##### Footer pages questions #####
   output$footer <- renderUI({
     p <- current_page()
     pos <- match(p, themes)
@@ -469,9 +474,12 @@ server <- function(input, output, session) {
     )
   })
   
+  ##### Vérification questions obligatoire #####
   validate_theme <- function(th) {
-    questions_theme <- questions_list %>% filter(Theme == Theme)
-    obligatoires <- questions_theme %>% filter(tolower(Observation) == "Obligatoire")
+    questions_theme <- questions_list %>% filter(Theme == th)%>%
+      mutate(Observation = trimws(tolower(gsub("\u00A0", " ", Observation))))
+    
+    obligatoires <- questions_theme %>% filter(Observation == "obligatoire")
     
     non_remplies <- obligatoires %>%
       mutate(Reponse = sapply(Numero, function(id) {
@@ -501,13 +509,17 @@ server <- function(input, output, session) {
     return(TRUE)
   }
   
+  
+  ##### Partie ObserveEvent ####
   observe({
     lapply(themes, function(th) {
       observeEvent(input[[paste0("next_", th)]], {
-        current_index <- which(themes == th)
+         #current_index <- which(themes == th)
         
         # ✅ Vérifier les champs obligatoires du thème courant
-        if (!validate_theme(th)) return()  # ⛔ Stop si validation échoue
+        if (!validate_theme(th)) return()
+        
+        current_index <- which(themes == th)
         
         # 🔵 Marquer le thème comme complété
         old <- completed_themes()
@@ -522,6 +534,8 @@ server <- function(input, output, session) {
       })
     })
   })
+  
+  
   
   
   observeEvent(input$prev_btn, {

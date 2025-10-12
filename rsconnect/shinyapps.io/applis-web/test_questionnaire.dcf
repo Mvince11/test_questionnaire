@@ -1,10 +1,10 @@
 name: test_questionnaire
-title:
+title: Questionnaire Région PQNA
 username: applis-web
 account: applis-web
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 15589627
-bundleId: 10964893
+bundleId: 11013942
 url: https://applis-web.shinyapps.io/test_questionnaire/
 version: 1
