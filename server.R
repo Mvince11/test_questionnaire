@@ -629,8 +629,20 @@ server <- function(input, output, session) {
         actionButton("continuer", "Continuer", class = "btn-success")
       )
     ))
-    
-    
   })
+  
+  observeEvent(input$submit, {
+    th <- "Formulaire de contact"  # ou le nom réel du dernier thème
+    if (!validate_theme(th)) return()
+    
+    completed_themes(c(completed_themes(), th))
+    # showModal(modalDialog(
+    #   title = "Formulaire terminé",
+    #   "Merci d’avoir complété toutes les sections.",
+    #   easyClose = TRUE,
+    #   footer = modalButton("Fermer")
+    # ))
+  })
+  
   
 }
