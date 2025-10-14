@@ -5,6 +5,6 @@ account: applis-web
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 15589627
-bundleId: 11013942
+bundleId: 11031657
 url: https://applis-web.shinyapps.io/test_questionnaire/
 version: 1

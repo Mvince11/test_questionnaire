@@ -474,6 +474,26 @@ server <- function(input, output, session) {
     )
   })
   
+  validate_choix <- function(questions_list) {
+    questions_list %>%
+      rowwise() %>%
+      mutate(
+        Reponses = list(input[[paste0("q", Numero)]]),
+        nb_reponses = if (is.null(Reponses)) 0 else length(Reponses),
+        limite = case_when(
+          Choix == "Mono" ~ 1,
+          Choix == "Multichoix 2 MAX" ~ 2,
+          Choix == "Multichoix 3 MAX" ~ 3,
+          Choix == "Multichoix" ~ Inf,
+          TRUE ~ Inf
+        ),
+        trop_de_reponses = nb_reponses > limite
+      ) %>%
+      ungroup() %>%
+      filter(trop_de_reponses)
+  }
+  
+  
   ##### Vérification questions obligatoire #####
   validate_theme <- function(th) {
     questions_theme <- questions_list %>% filter(Theme == th)%>%
@@ -488,6 +508,26 @@ server <- function(input, output, session) {
         return(val)
       })) %>%
       filter(is.na(Reponse))
+    
+    
+    trop_de_reponses <- validate_choix(questions_theme)
+    
+    if (nrow(trop_de_reponses) > 0) {
+      showModal(modalDialog(
+        title = div(icon("exclamation-triangle"), span("Trop de réponses", style = "color:#D32F2F; font-weight:bold; font-size:1.4rem;")),
+        div(
+          style = "font-size:1.2rem; color:#293574; margin-top:10px;",
+          HTML(paste0(
+            "⚠️ Vous avez sélectionné trop de réponses pour les questions suivantes :<br><ul>",
+            paste0("<li><strong>", trop_de_reponses$Questions, "</strong> (max ", trop_de_reponses$limite, ")</li>", collapse = ""),
+            "</ul>"
+          ))
+        ),
+        easyClose = TRUE,
+        footer = modalButton("Corriger")
+      ))
+      return(FALSE)
+    }
     
     if (nrow(non_remplies) > 0) {
       showModal(modalDialog(
