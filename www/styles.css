@@ -338,3 +338,15 @@ textarea{
   margin: 0 auto; /* centre horizontalement */
 }
 
+
+/*.modal-content {
+  border-bottom-width: 1px;
+  border-color: rgba(101, 147, 220, 0.5);
+  border-left-width: 1px;
+  border-right-width: 1px;
+  border-style: solid;
+  border-top-width: 1px;
+  box-shadow: rgba(101, 147, 220, 0.2) 0px 4px 8px 0px;
+  opacity: 1;
+  border-radius: 8px;
+}*/

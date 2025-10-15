@@ -514,11 +514,11 @@ server <- function(input, output, session) {
     
     if (nrow(trop_de_reponses) > 0) {
       showModal(modalDialog(
-        title = div(icon("exclamation-triangle"), span("Trop de réponses", style = "color:#D32F2F; font-weight:bold; font-size:1.4rem;")),
+        title = div(icon("exclamation-triangle", style="color:rgba(239,119,87,1)"), span("Trop de réponses", style = "color:#D32F2F; font-weight:bold; font-size:1.4rem;")),
         div(
-          style = "font-size:1.2rem; color:#293574; margin-top:10px;",
+          style = "font-size:1.5rem; color:#293574; margin-top:50px;",
           HTML(paste0(
-            "⚠️ Vous avez sélectionné trop de réponses pour les questions suivantes :<br><ul>",
+            "Vous avez sélectionné trop de réponses pour les questions suivantes :<br><ul>",
             paste0("<li><strong>", trop_de_reponses$Questions, "</strong> (max ", trop_de_reponses$limite, ")</li>", collapse = ""),
             "</ul>"
           ))
@@ -533,7 +533,7 @@ server <- function(input, output, session) {
       showModal(modalDialog(
         title = div(icon("exclamation-triangle"), span("Champs obligatoires manquants", style = "color:#D32F2F; font-weight:bold; font-size:1.4rem;")),
         div(
-          style = "font-size:1.2rem; color:#293574; margin-top:10px;",
+          style = "font-size:1.5rem; color:#293574; margin-top:50px;",
           HTML(paste0(
             "⚠️ Vous devez remplir les champs suivants avant de continuer :<br><ul>",
             paste0("<li><strong>", non_remplies$Questions, "</strong></li>", collapse = ""),
@@ -611,6 +611,11 @@ server <- function(input, output, session) {
   
 ##### Enregistre toutes les Questions et réponses dans un fichier xlsx ######  
   observeEvent(input$submit, {
+    th <- "Formulaire de contact"  # ou le nom réel du dernier thème
+    if (!validate_theme(th)) return()
+    
+    completed_themes(c(completed_themes(), th))
+    
     reponses_df <- questions_list %>%
       mutate(Reponse = sapply(Numero, function(id) {
         val <- input[[paste0("q", id)]]
@@ -670,19 +675,4 @@ server <- function(input, output, session) {
       )
     ))
   })
-  
-  observeEvent(input$submit, {
-    th <- "Formulaire de contact"  # ou le nom réel du dernier thème
-    if (!validate_theme(th)) return()
-    
-    completed_themes(c(completed_themes(), th))
-    # showModal(modalDialog(
-    #   title = "Formulaire terminé",
-    #   "Merci d’avoir complété toutes les sections.",
-    #   easyClose = TRUE,
-    #   footer = modalButton("Fermer")
-    # ))
-  })
-  
-  
 }
